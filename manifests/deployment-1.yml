@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "aks-55bc"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "aks-55bc"
+  template:
+    metadata:
+      labels:
+        app: "aks-55bc"
+    spec:
+      containers:
+        - name: "aks-55bc"
+          image: "myazcr2022.azurecr.io/aks"
+          ports:
+          - containerPort: 8080

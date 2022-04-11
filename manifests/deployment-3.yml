@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "myaks-c456"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "myaks-c456"
+  template:
+    metadata:
+      labels:
+        app: "myaks-c456"
+    spec:
+      containers:
+        - name: "myaks-c456"
+          image: "myacrs2022.azurecr.io/myaks"
+          ports:
+          - containerPort: 8080

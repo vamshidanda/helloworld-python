@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "myadks-be9f"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "myadks-be9f"
+  template:
+    metadata:
+      labels:
+        app: "myadks-be9f"
+    spec:
+      containers:
+        - name: "myadks-be9f"
+          image: "myacrs2022.azurecr.io/myadks"
+          ports:
+          - containerPort: 8080

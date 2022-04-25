@@ -1,0 +1,50 @@
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: myacrrr.azurecr.io
+        username: ${{ secrets.acr_myacrrr_username }}
+        password: ${{ secrets.acr_myacrrr_password }}
+    
+    - name: Build and push image to ACR
+      id: build-image
+      run: |
+        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t myacrrr.azurecr.io/myaksapps:${{ github.sha }} --label dockerfile-path=Dockerfile
+        docker push myacrrr.azurecr.io/myaksapps:${{ github.sha }}
+    
+    - uses: azure/k8s-set-context@v1
+      with:
+         kubeconfig: ${{ secrets.aks_myaksapps_kubeConfig }}
+      id: login
+    
+    - name: Create namespace
+      run: |
+        namespacePresent=`kubectl get namespace | grep myaks-apps8774 | wc -l`
+        if [ $namespacePresent -eq 0 ]
+        then
+            echo `kubectl create namespace myaks-apps8774`
+        fi
+
+    - uses: azure/k8s-create-secret@v1
+      with:
+        namespace: myaks-apps8774
+        container-registry-url: myacrrr.azurecr.io
+        container-registry-username: ${{ secrets.acr_myacrrr_username }}
+        container-registry-password: ${{ secrets.acr_myacrrr_password }}
+        secret-name: myaksappsdockerauth
+       
+    - uses: azure/k8s-deploy@v1.2
+      with:
+        namespace: myaks-apps8774
+        manifests: |
+          manifests/deployment-5.yml
+          manifests/service-5.yml
+        images: |
+          myacrrr.azurecr.io/myaksapps:${{ github.sha }}
+        imagepullsecrets: |
+          myaksappsdockerauth
